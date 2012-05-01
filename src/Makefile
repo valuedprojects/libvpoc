@@ -7,7 +7,6 @@
 # to the target.
 #
 
-CPPFLAGS = -I$(KL_EXPERIMENTS)/include
 PROJECT = lib.org.sinkme.misc
 SRC_DIR = $(KL_EXPERIMENTS)/$(PROJECT)/src
 TARGET_DIR = $(KL_EXPERIMENTS)/$(PROJECT)/$(TARGET)
@@ -37,9 +36,9 @@ $(TARGET_DIR)/libmisc.a: libmisc.a(streamOps.o tcpUtils.o)
 
 # However, we do have to rule up the .o files so that if the header files
 # are touched, the .o files will be out-of-date:
-streamOps.o: streamOps.h tcpUtils.h
+streamOps.o: streamOps.h
 
-tcpUtils.o: streamOps.h tcpUtils.h
+tcpUtils.o: tcpUtils.h
 
 clean :
 # Interesting, the "$(RM)" is a predefined make variable, but $(CP) is not.

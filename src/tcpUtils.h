@@ -1,21 +1,7 @@
 #ifndef _TCPUTILS_H_
 #define _TCPUTILS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif /*__cplusplus*/
-
-/*
-* tcp_PF_UNIX_srv_open - Used by an application to set up a file descriptor for
-* a PF_UNIX (i.e. filename) style server socket.
-*/
-int tcp_PF_UNIX_srv_open (char * pathName);
-
-/*
-* tcp_PF_INET_srv_open - Used by an application to set up a file descriptor for
-* a PF_INET (i.e. internet: host/port) style server socket.
-*/
-int tcp_PF_INET_srv_open (char * service, int port);
+#include <sys/socket.h>		// For sockaddr
 
 /*
 * tcp_PF_INET_cl_open - Used by a client application to setup a connection to a
@@ -31,20 +17,81 @@ int tcp_PF_INET_cl_open(char * host, char * service, int port);
 */
 int tcp_PF_UNIX_cl_open(char * pathName);
 
-// TODO
-// Provide more comments about this function.
-// Why does the "serverProcessing" function prototype have 2 fd parameters when,
-// in a socket connection, you only get 1 back and you can use that one for
-// both writing and reading?  Because, we want the tcp_ServerStartup function to
-// be able to use a "Processing" function that may also have been used with some
-// other type of IPC stream protocol, like, maybe, a "pipe".  And in general,
-// streaming mechanisms will have a "read" fd, and a "write" fd.
-// The tcp_ServerStartup function will give the same socket fd as both parameters
-// when tcp_ServerStartup calls the serverProcessing function pointer.
-int tcp_ServerStartup (int portNum, char * pathName, int (*serverProcessing)(int read_fd, int write_fd));
+/*
+ * Because of signal handling, there can only be one object of this class in any process.
+ * The class sets up signal handlers for process exit (like CTRL C) and for child process
+ * exiting (like when a server child finishes it's work).
+ * This restriction does not preclude many TCP connections.  There may be a great many
+ * server processes that are communicating with a great many clients.  But this class
+ * is the abstraction of the single server that spawns all the individual server side
+ * processes.
+ */
+/*
+ * NOTE: It's important to declare and define a virtual destructor to the class.
+ * With out this, a "vtable" is not created, and we get link errors when I try
+ * to build a program that references this library.
+ * "Undefined symbols: vtable"
+ * I get these errors even if my main program does not use the "tcp_Server" class.
+ */
+class tcp_Server
+{
+private:
+	int tcp_bind_setup_fd (int fd, sockaddr * pGenericSocketAddress);
+	static void handleExitServer (int signum);
+	static void handleExitedServerChildren (int signum);
+	static void setupHandlers();
+	int tcp_PF_INET_srv_open (char * service, int port);
+	int tcp_PF_UNIX_srv_open (char * pathName);
+	static int server_fd;
+	static int sigstate;
+public:
+	tcp_Server(char * service, int port);
+	tcp_Server(char * pathName);
+	virtual ~tcp_Server() {};
+	virtual int serverProcessing(int read_fd, int write_fd);
+	int startup();
+};
 
-#ifdef __cplusplus
-}
-#endif /*__cplusplus*/
+class tcp_Base_Server
+{
+private:
+	static void handleExitServer (int signum);
+	static void handleExitedServerChildren (int signum);
+	static void setupHandlers();
+	static int sigstate;
+protected:
+	int tcp_bind_setup_fd (int fd, sockaddr * pGenericSocketAddress, socklen_t addrlen);
+	static int server_fd;
+public:
+	tcp_Base_Server();
+	virtual ~tcp_Base_Server();
+	virtual int serverProcessing(int read_fd, int write_fd);
+	int startup();
+};
+
+class tcp_INET_Port_Server : public tcp_Base_Server
+{
+private:
+	int tcp_port_srv_open (int port);
+public:
+	tcp_INET_Port_Server(int p);
+};
+
+class tcp_INET_Service_Server : public tcp_Base_Server
+{
+private:
+	int tcp_service_srv_open (char * service);
+public:
+	tcp_INET_Service_Server(char * s);
+};
+
+class tcp_UNIX_Server : public tcp_Base_Server
+{
+private:
+	int tcp_path_srv_open (char * pathname);
+public:
+	tcp_UNIX_Server(char * pathname);
+	virtual ~tcp_UNIX_Server();
+};
 
 #endif // _TCPUTILS_H_
