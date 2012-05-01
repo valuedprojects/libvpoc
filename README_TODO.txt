@@ -36,4 +36,4 @@ Experiments
 
 where Experiments/project1/t1 contains makery for the t1 platform.  Now, should all t1 platform builds require a common set of make symbols (which is likely), I will need to investigate how those assignments might be factored out of the Experiments/*/t1/makefiles.
 
-2. The second reason to reorg is so that I can try to use "git" for source code control
+2. The second reason to re-org is so that I can try to use "git" for source code control. My idea is that I should be able to maintain a single lib.org.sinkme.misc directory, but git will track a branch for C++ and a separate branch for C.  The experiment will determine how I can retrieve each of these sets for use by a C or C++ user of the code.
