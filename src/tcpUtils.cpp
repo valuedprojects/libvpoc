@@ -1,4 +1,11 @@
-
+/*
+ * tcpUtils.cpp
+ * 
+ * Experimenting with a C implementation of a TCP socket connection utility.
+ * The functions in this code allow establishing a TCP connection with INET
+ * protocol (i.e. host / port), or UNIX protocol (i.e. a pathname).
+ *
+ */
 #include "tcpUtils.h"
 
 #include <sys/types.h>
