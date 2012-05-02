@@ -1,5 +1,17 @@
 library org.sinkme.misc
 
+Version Listing:
+Use "git" to access a desired flavor of this code:
+
+v1.x.x
+	Use "git checkout v1.x.x" where 1.x.x is a valid 1. version, and this will give you C code that
+	uses functions for setting up a tcp server or client.
+
+v2.x.x
+	Use "git checkout v2.x.x" where 2.x.x is a valid 2. version, and this will give you C++ code that
+	uses classes for setting up a tcp server or client.
+
+
 TODO
 Incorporate the HexOps module into this library.
 
