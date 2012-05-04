@@ -11,18 +11,23 @@
 // reading.  Supply the number of bytes, and the StreamRead will
 // deliver the bytes into a buffer.
 //
-#ifdef __cplusplus
-extern "C" {
-#endif /*__cplusplus*/
+// This is the C++ version of streamops.
+// A streamops object constructs with a file descriptor.
+//
 
 #define STREAMOPSBUFFERFULL -2
 #define STREAMOPSBUFFEREMPTY 0
-extern int StreamRead (int streamfd, unsigned char * Buffer, unsigned int Length, char * Description);
-extern int StreamReadDelimited (int streamfd, unsigned char * Buffer, unsigned int Length, unsigned char Delimiter, char * Description);
 
-#ifdef __cplusplus
-}
-#endif /*__cplusplus*/
+class StreamOps
+{
+public:
+	StreamOps(int fd) {streamfd = fd;};
+	int sRead(unsigned char * Buffer, unsigned int Length, char * Description);
+	int sReadDelimited(unsigned char * Buffer, unsigned int Length, unsigned char Delimiter, char * Description);
+private:
+	int streamfd;
+};
+
 
 #endif // _STREAMOPS_H_
 
