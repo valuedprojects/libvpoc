@@ -1,4 +1,13 @@
-
+/*
+ * tcpUtils.cpp -
+ * C++ Implementation of tcp connection utilities.
+ * This compilation unit contains code for some of the tcp_Server class methods.
+ *
+ * Ken Lamarche
+ * Header comment created 14 May, 2012, but this code is a month old.
+ *
+ */
+ 
 #include "tcpUtils.h"
 
 #include <iostream>
@@ -404,6 +413,13 @@ int tcp_Server::serverProcessing(int read_fd, int write_fd)
 }
 
 
+/*
+ * tcp_Server constructors can take a pathName string (should we be creating a local
+ * server bound to a local file system node), or can take a service / port (should
+ * we be creating a server that can be accessed by a client on another networked
+ * computer)
+ */
+
 tcp_Server::tcp_Server(char* pathName)
 {
 	setupHandlers();
@@ -419,6 +435,7 @@ tcp_Server::tcp_Server(char* pathName)
 
 }
 
+// TODO - I think we create a server with either a port or a service, not both.
 tcp_Server::tcp_Server(char* service, int port)
 {
 	setupHandlers();
