@@ -4,7 +4,20 @@
 #include <sys/socket.h>		// For sockaddr
 
 /*
-* tcp_PF_INET_cl_open - Used by a client application to setup a connection to a
+ * Now, let's make the client a class...
+ *
+ */
+
+class tcp_Client
+{
+public:
+	tcp_Client(char * pathName);
+private:
+	int fd;
+};
+
+/*
+ * tcp_PF_INET_cl_open - Used by a client application to setup a connection to a
  * PF_INET server.  The returned file descriptor will be used for to send data
  * between client and server.
  */
