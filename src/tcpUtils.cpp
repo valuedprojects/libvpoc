@@ -520,7 +520,6 @@ int tcp_Server::startup(void)
 					sockAddrLength = 512;
 					getsockname(tcp_Server::server_fd, pSockAddr, &sockAddrLength);
 					cout << "sockAddrLength: " << (int)sockAddrLength <<
-							"  pSockAddr.sa_len: " << (int)(pSockAddr->sa_len) <<
 							"  pSockAddr.sa_family: " << (int)(pSockAddr->sa_family) << endl;
 
 					// Close the file descriptor...
@@ -552,10 +551,6 @@ int tcp_Server::startup(void)
 				accept_one=1;
 			}
 		}
-
-		// Here... Let's take a look at the peerAddr.
-		// We should see PF_INET type socket addresses.
-		cout << "peerAddrLength: " << peerAddrLength << ", peerAddr.sa_len:" << (int)peerAddr.sa_len << "  peerAddr.sa_family:" << (int)peerAddr.sa_family << endl;
 
 		// We now have a connection fd. Now, we need to fork a child process with
 		// this new socket fd.
@@ -900,10 +895,6 @@ int tcp_Base_Server::startup(void)
 				accept_one=1;
 			}
 		}
-
-		// Here... Let's take a look at the peerAddr.
-		// We should see PF_INET type socket addresses.
-		cout << "peerAddrLength: " << peerAddrLength << ", peerAddr.sa_len:" << (int)peerAddr.sa_len << "  peerAddr.sa_family:" << (int)peerAddr.sa_family << endl;
 
 		// We now have a connection fd. Now, we need to fork a child process with
 		// this new socket fd.
