@@ -10,12 +10,30 @@
  */
 int tcp_PF_INET_cl_open(char * host, char * service, int port);
 
-/*
-* tcp_PF_UNIX_cl_open - Used by a client application to setup a connection to a
-* PF_UNIX server.  The returned file descriptor will be used for to send data
-* between client and server.
-*/
-int tcp_PF_UNIX_cl_open(char * pathName);
+
+class tcp_Base_Client
+{
+private:
+	int tcp_cl_open();
+protected:
+	int client_fd;
+	char socketAddr[256]; // 256 bytes for any possible socket address.
+public:
+	tcp_Base_Client();
+	virtual ~tcp_Base_Client();
+	virtual int clientProcessing(int read_fd, int write_fd);
+	int startup();
+};
+
+
+class tcp_UNIX_Client : public tcp_Base_Client
+{
+private:
+	int tcp_PF_UNIX_cl_open (char * pathname);
+public:
+	tcp_UNIX_Client(char * pathname);
+	virtual ~tcp_UNIX_Client();
+};
 
 /*
  * Because of signal handling, there can only be one object of this class in any process.

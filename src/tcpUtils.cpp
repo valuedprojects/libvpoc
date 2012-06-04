@@ -123,47 +123,120 @@ int tcp_PF_INET_cl_open(char * host, char * service, int port)
 }
 
 
-/*
- * tcp_PF_UNIX_cl_open - Used by a client application to setup a connection to a
- * PF_UNIX server.  The returned file descriptor will be used for to send data
- * between client and server.
- */
-int tcp_PF_UNIX_cl_open(char * pathName)
+tcp_Base_Client::tcp_Base_Client()
 {
-	int fd;
-	struct sockaddr_un srv_addr;   // pathname overlay on the general sockaddr struct.
+	cout << "tcp_Base_Client()" << endl;
+};
 
+
+tcp_Base_Client::~tcp_Base_Client()
+{
+	cout << "tcp_Base_Client::~tcp_Base_Client()" << endl;
+	close (client_fd);
+}
+
+
+
+int tcp_Base_Client::startup()
+{
+	
+	// Do Client Processing:
+	clientProcessing(client_fd, client_fd);
+	
+	return (0);
+}
+
+/*
+ * Base version of the server processing.
+ * Derived classes could fall back on this logic, and it should work...
+ */
+int tcp_Base_Client::clientProcessing(int read_fd, int write_fd)
+{
+	int charCount = 30;
+	char C;
+	int status;
+	char ErrBuff[128];
+	C = 'A';
+	while (charCount)
+	{
+		if ( (status=write(write_fd, &C, 1)) < 0 )
+		{
+			// Error condition on read.
+			sprintf(ErrBuff, "Problem reading \"%s\".", "Generic Server Processing");
+			perror (ErrBuff);
+			return status;
+		}
+		else if (status == 0)
+		{
+			// The peer disconnected the connection
+			cout << "Peer closed connection" << endl;
+			return 0;
+		}
+		else
+		{
+			cout << C;
+		}
+		charCount--;
+		C++;
+	}
+	cout << endl;
+	cout << "clientProcessing Exiting" << endl;
+	return 8;
+}
+
+
+
+// tcp_UNIX_Client methods...
+
+
+tcp_UNIX_Client::tcp_UNIX_Client(char * pathname)
+{
+	cout << "tcp_UNIX_Client" << endl;
+	tcp_PF_UNIX_cl_open(pathname);
+}
+
+tcp_UNIX_Client::~tcp_UNIX_Client()
+{
+	cout << "tcp_UNIX_Client Destructor" << endl;
+}
+
+
+int tcp_UNIX_Client::tcp_PF_UNIX_cl_open (char * pathname)
+{
+	struct sockaddr_un * pAddr;   // pathname overlay on the general sockaddr struct.
+	
+	pAddr = (sockaddr_un *)socketAddr;
 	// Clear the structure...
-	memset ( (char*)&srv_addr, 0, sizeof(srv_addr) );
-
+	memset (pAddr, 0, sizeof(struct sockaddr_un));
+	
+	
 	// Set Protocol Family for the address structure...
-	srv_addr.sun_family = PF_UNIX;
-
+	pAddr->sun_family = PF_UNIX;
+	
 	// For UNIX style, set the path for the socket.
-	strcpy(srv_addr.sun_path,pathName);
-
+	strcpy(pAddr->sun_path,pathname);
+	
 	// Define the server socket...
-	if ( (fd = socket (PF_UNIX, SOCK_STREAM, 0)) <  0 )
+	if ( (client_fd = socket (PF_UNIX, SOCK_STREAM, 0)) <  0 )
 	{
 		char buff [256];
 		sprintf(buff, "%s: socket():", __FUNCTION__);
 		perror(buff);
 		return (-1);
 	}
-
-	// Attempt to connect to the server
-	if ( connect (fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr) ) < 0 )
+	
+	// Attempt to connect to the server.
+	// Would be really good to put this in the Base class, but "connect()" must take
+	// a size argument that is consistent with the flavor of socket address struct
+	// that is being used.
+	if ( connect (client_fd, (struct sockaddr *)socketAddr, sizeof(struct sockaddr_un) ) < 0 )
 	{
 		char buff[256];
 		sprintf(buff, "%s: connect(): ", __FUNCTION__);
 		perror(buff);
 		return (-1);
 	}
-
-	// Return the now connected File Descriptor.
-	return (fd);
 }
-
 
 /*
 A special flag is used to allow the "accept" system call to continue when a signal
