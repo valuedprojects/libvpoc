@@ -33,25 +33,6 @@ int tcp_PF_UNIX_cl_open(char * pathName);
  * "Undefined symbols: vtable"
  * I get these errors even if my main program does not use the "tcp_Server" class.
  */
-class tcp_Server
-{
-private:
-	int tcp_bind_setup_fd (int fd, sockaddr * pGenericSocketAddress);
-	static void handleExitServer (int signum);
-	static void handleExitedServerChildren (int signum);
-	static void setupHandlers();
-	int tcp_PF_INET_srv_open (char * service, int port);
-	int tcp_PF_UNIX_srv_open (char * pathName);
-	static int server_fd;
-	static int sigstate;
-public:
-	tcp_Server(char * service, int port);
-	tcp_Server(char * pathName);
-	virtual ~tcp_Server() {};
-	virtual int serverProcessing(int read_fd, int write_fd);
-	int startup();
-};
-
 class tcp_Base_Server
 {
 private:
