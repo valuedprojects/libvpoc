@@ -30,9 +30,12 @@ class tcp_INET_Port_Client : public tcp_Base_Client
 {
 private:
 	int tcp_port_cl_open (int port, char * host);
+	int tcp_port_cl_open (char * service, char * host);
 public:
 	tcp_INET_Port_Client(int port);
 	tcp_INET_Port_Client(int port, char * hostname);
+	tcp_INET_Port_Client(char * service);
+	tcp_INET_Port_Client(char * service, char * hostname);
 	virtual ~tcp_INET_Port_Client();
 };
 

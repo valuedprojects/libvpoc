@@ -188,7 +188,7 @@ int tcp_Base_Client::clientProcessing(int read_fd, int write_fd)
 
 
 
-// tcp_INET_Port_Client methods...
+// tcp_INET_Client methods...
 
 
 tcp_INET_Port_Client::tcp_INET_Port_Client(int port)
@@ -197,10 +197,22 @@ tcp_INET_Port_Client::tcp_INET_Port_Client(int port)
 	tcp_port_cl_open(port, (char*)"localhost");
 }
 
+tcp_INET_Port_Client::tcp_INET_Port_Client(char * service)
+{
+	cout << "tcp_INET_Port_Client(service)" << endl;
+	tcp_port_cl_open(service, (char*)"localhost");
+}
+
 tcp_INET_Port_Client::tcp_INET_Port_Client(int port, char * hostname)
 {
 	cout << "tcp_INET_Port_Client(port, hostname)" << endl;
 	tcp_port_cl_open(port, hostname);
+}
+
+tcp_INET_Port_Client::tcp_INET_Port_Client(char * service, char * hostname)
+{
+	cout << "tcp_INET_Port_Client(service, hostname)" << endl;
+	tcp_port_cl_open(service, hostname);
 }
 
 tcp_INET_Port_Client::~tcp_INET_Port_Client()
@@ -208,10 +220,10 @@ tcp_INET_Port_Client::~tcp_INET_Port_Client()
 	cout << "tcp_INET_Port_Client Destructor" << endl;
 }
 
+
 int tcp_INET_Port_Client::tcp_port_cl_open (int port, char * host)
 {
 	unsigned long inaddr;
-	struct servent * sp;
 	struct hostent * hp;
 	struct sockaddr_in srv_addr;   // A 16 byte overlay on the general sockaddr struct.
 	
@@ -230,6 +242,81 @@ int tcp_INET_Port_Client::tcp_port_cl_open (int port, char * host)
 		fprintf(stderr, "%s: No host specified\n", __FUNCTION__);
 		return (-1);
 	}
+	
+	if ( (inaddr=inet_addr(host)) != INADDR_NONE )
+	{
+		// The host string is an IP address.
+		memcpy( (char*)&srv_addr.sin_addr, (char*)&inaddr, sizeof(inaddr) );
+	}
+	else
+	{
+		// See if the host text string is a name in to be found with gethostbyname
+		if ( (hp=gethostbyname(host)) == NULL )
+		{
+			// This is an error, cannot find the hostname
+			fprintf(stderr, "%s: hostname: %s, cannot be found\n", __FUNCTION__, host);
+			return (-1);
+		}
+		srv_addr.sin_addr.s_addr=*((unsigned long *)(hp->h_addr));
+	}
+	
+	// Define the server socket...
+	if ( (client_fd = socket (AF_INET, SOCK_STREAM, 0)) <  0 )
+	{
+		char buff [256];
+		sprintf(buff, "%s: socket():", __FUNCTION__);
+		perror(buff);
+		return (-1);
+	}
+	
+	// Attempt to connect to the server
+	if ( connect (client_fd, (struct sockaddr *)&srv_addr, sizeof(struct sockaddr_in) ) < 0 )
+	{
+		char buff[256];
+		sprintf(buff, "%s: connect(): ", __FUNCTION__);
+		perror(buff);
+		return (-1);
+	}
+	
+	return (0);
+}
+
+
+int tcp_INET_Port_Client::tcp_port_cl_open (char * service, char * host)
+{
+	unsigned long inaddr;
+	struct servent * sp;
+	struct hostent * hp;
+	struct sockaddr_in srv_addr;   // A 16 byte overlay on the general sockaddr struct.
+	
+	// Clear the structure...
+	memset ( (char*)&srv_addr, 0, sizeof(srv_addr) );
+
+	// A hostname character string must be supplied.
+	if ( ! host )
+	{
+		fprintf(stderr, "%s: No host specified\n", __FUNCTION__);
+		return (-1);
+	}
+	
+	// A service character string must be supplied.
+	if ( ! service )
+	{
+		fprintf(stderr, "%s: No service specified\n", __FUNCTION__);
+		return (-1);
+	}
+
+	// Set Protocol Family for the address structure...
+	srv_addr.sin_family = PF_INET;
+	
+	// Find the service and use this to fill in the port number:
+	if ( (sp=getservbyname(service, "tcp")) == NULL )
+	{
+		// Error in attempting to find the named service.
+		fprintf(stderr, "%s: unknown service - %s\n", __FUNCTION__, service);
+		return (-1);
+	}
+	srv_addr.sin_port = sp->s_port;
 	
 	if ( (inaddr=inet_addr(host)) != INADDR_NONE )
 	{
