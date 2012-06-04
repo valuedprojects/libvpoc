@@ -123,6 +123,8 @@ int tcp_PF_INET_cl_open(char * host, char * service, int port)
 }
 
 
+// tcp_Base_Client methods...
+
 tcp_Base_Client::tcp_Base_Client()
 {
 	cout << "tcp_Base_Client()" << endl;
@@ -186,6 +188,89 @@ int tcp_Base_Client::clientProcessing(int read_fd, int write_fd)
 
 
 
+// tcp_INET_Port_Client methods...
+
+
+tcp_INET_Port_Client::tcp_INET_Port_Client(int port)
+{
+	cout << "tcp_INET_Port_Client(port)" << endl;
+	tcp_port_cl_open(port, (char*)"localhost");
+}
+
+tcp_INET_Port_Client::tcp_INET_Port_Client(int port, char * hostname)
+{
+	cout << "tcp_INET_Port_Client(port, hostname)" << endl;
+	tcp_port_cl_open(port, hostname);
+}
+
+tcp_INET_Port_Client::~tcp_INET_Port_Client()
+{
+	cout << "tcp_INET_Port_Client Destructor" << endl;
+}
+
+int tcp_INET_Port_Client::tcp_port_cl_open (int port, char * host)
+{
+	unsigned long inaddr;
+	struct servent * sp;
+	struct hostent * hp;
+	struct sockaddr_in srv_addr;   // A 16 byte overlay on the general sockaddr struct.
+	
+	// Clear the structure...
+	memset ( (char*)&srv_addr, 0, sizeof(srv_addr) );
+	
+	// Set Protocol Family for the address structure...
+	srv_addr.sin_family = PF_INET;
+	
+	// Take the port from the parameter
+	srv_addr.sin_port=htons(port);
+		
+	// Attempt to interpret the "host" parameter:
+	if ( ! host )
+	{
+		fprintf(stderr, "%s: No host specified\n", __FUNCTION__);
+		return (-1);
+	}
+	
+	if ( (inaddr=inet_addr(host)) != INADDR_NONE )
+	{
+		// The host string is an IP address.
+		memcpy( (char*)&srv_addr.sin_addr, (char*)&inaddr, sizeof(inaddr) );
+	}
+	else
+	{
+		// See if the host text string is a name in to be found with gethostbyname
+		if ( (hp=gethostbyname(host)) == NULL )
+		{
+			// This is an error, cannot find the hostname
+			fprintf(stderr, "%s: hostname: %s, cannot be found\n", __FUNCTION__, host);
+			return (-1);
+		}
+		srv_addr.sin_addr.s_addr=*((unsigned long *)(hp->h_addr));
+	}
+	
+	// Define the server socket...
+	if ( (client_fd = socket (AF_INET, SOCK_STREAM, 0)) <  0 )
+	{
+		char buff [256];
+		sprintf(buff, "%s: socket():", __FUNCTION__);
+		perror(buff);
+		return (-1);
+	}
+	
+	// Attempt to connect to the server
+	if ( connect (client_fd, (struct sockaddr *)&srv_addr, sizeof(struct sockaddr_in) ) < 0 )
+	{
+		char buff[256];
+		sprintf(buff, "%s: connect(): ", __FUNCTION__);
+		perror(buff);
+		return (-1);
+	}
+	
+	return (0);
+}
+
+
+
 // tcp_UNIX_Client methods...
 
 
@@ -208,7 +293,6 @@ int tcp_UNIX_Client::tcp_PF_UNIX_cl_open (char * pathname)
 	pAddr = (sockaddr_un *)socketAddr;
 	// Clear the structure...
 	memset (pAddr, 0, sizeof(struct sockaddr_un));
-	
 	
 	// Set Protocol Family for the address structure...
 	pAddr->sun_family = PF_UNIX;

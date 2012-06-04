@@ -26,6 +26,17 @@ public:
 };
 
 
+class tcp_INET_Port_Client : public tcp_Base_Client
+{
+private:
+	int tcp_port_cl_open (int port, char * host);
+public:
+	tcp_INET_Port_Client(int port);
+	tcp_INET_Port_Client(int port, char * hostname);
+	virtual ~tcp_INET_Port_Client();
+};
+
+
 class tcp_UNIX_Client : public tcp_Base_Client
 {
 private:
