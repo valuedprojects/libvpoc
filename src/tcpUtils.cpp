@@ -30,98 +30,6 @@
 
 using namespace std;
 
-/*
- * tcp_PF_INET_cl_open - Used by a client application to setup a connection to a
- * PF_INET server.  The returned file descriptor will be used for to send data
- * between client and server.
- */
-int tcp_PF_INET_cl_open(char * host, char * service, int port)
-{
-	int fd;
-	unsigned long inaddr;
-	struct servent * sp;
-	struct hostent * hp;
-	struct sockaddr_in srv_addr;   // A 16 byte overlay on the general sockaddr struct.
-
-	// Clear the structure...
-	memset ( (char*)&srv_addr, 0, sizeof(srv_addr) );
-
-	// Set Protocol Family for the address structure...
-	srv_addr.sin_family = PF_INET;
-
-	// Set the port in the address structure...
-	if (port)
-	{
-		// Non-zero port, take the port from the parameter
-		srv_addr.sin_port=htons(port);
-	}
-	else if (service)
-	{
-		// Non-null service, then find the service and use this to fill in the
-		// port number:
-		if ( (sp=getservbyname(service, "tcp")) == NULL )
-		{
-			// Error in attempting to find the named service.
-			fprintf(stderr, "%s: unknown service - %s\n", __FUNCTION__, service);
-			return (-1);
-		}
-		srv_addr.sin_port = sp->s_port;
-	}
-	else
-	{
-		// No port or service provided.
-		fprintf(stderr, "%s: No port of service provided\n", __FUNCTION__);
-		return(-1);
-	}
-
-	// Attempt to interpret the "host" parameter:
-	if ( host )
-	{
-		if ( (inaddr=inet_addr(host)) != INADDR_NONE )
-		{
-			// The host string is an IP address.
-			memcpy( (char*)&srv_addr.sin_addr, (char*)&inaddr, sizeof(inaddr) );
-		}
-		else
-		{
-			// See if the host text string is a name in to be found with gethostbyname
-			if ( (hp=gethostbyname(host)) == NULL )
-			{
-				// This is an error, cannot find the hostname
-				fprintf(stderr, "%s: hostname: %s, cannot be found\n", __FUNCTION__, host);
-				return (-1);
-			}
-			srv_addr.sin_addr.s_addr=*((unsigned long *)(hp->h_addr));
-		}
-	}
-	else
-	{
-		fprintf(stderr, "%s: No host specified\n", __FUNCTION__);
-		return (-1);
-	}
-
-	// Define the server socket...
-	if ( (fd = socket (AF_INET, SOCK_STREAM, 0)) <  0 )
-	{
-		char buff [256];
-		sprintf(buff, "%s: socket():", __FUNCTION__);
-		perror(buff);
-		return (-1);
-	}
-
-	// Attempt to connect to the server
-	if ( connect (fd, (struct sockaddr *)&srv_addr, sizeof(srv_addr) ) < 0 )
-	{
-		char buff[256];
-		sprintf(buff, "%s: connect(): ", __FUNCTION__);
-		perror(buff);
-		return (-1);
-	}
-
-	// Return the now connected File Descriptor.
-	return (fd);
-}
-
 
 // tcp_Base_Client methods...
 
@@ -138,7 +46,6 @@ tcp_Base_Client::~tcp_Base_Client()
 }
 
 
-
 int tcp_Base_Client::startup()
 {
 	
@@ -149,7 +56,7 @@ int tcp_Base_Client::startup()
 }
 
 /*
- * Base version of the server processing.
+ * Base version of the client processing.
  * Derived classes could fall back on this logic, and it should work...
  */
 int tcp_Base_Client::clientProcessing(int read_fd, int write_fd)
@@ -188,40 +95,41 @@ int tcp_Base_Client::clientProcessing(int read_fd, int write_fd)
 
 
 
-// tcp_INET_Client methods...
+/*
+ * tcp_INET_Client methods...
+ */
 
-
-tcp_INET_Port_Client::tcp_INET_Port_Client(int port)
+tcp_INET_Client::tcp_INET_Client(int port)
 {
-	cout << "tcp_INET_Port_Client(port)" << endl;
-	tcp_port_cl_open(port, (char*)"localhost");
+	cout << "tcp_INET_Client(port)" << endl;
+	tcp_cl_open(port, (char*)"localhost");
 }
 
-tcp_INET_Port_Client::tcp_INET_Port_Client(char * service)
+tcp_INET_Client::tcp_INET_Client(char * service)
 {
-	cout << "tcp_INET_Port_Client(service)" << endl;
-	tcp_port_cl_open(service, (char*)"localhost");
+	cout << "tcp_INET_Client(service)" << endl;
+	tcp_cl_open(service, (char*)"localhost");
 }
 
-tcp_INET_Port_Client::tcp_INET_Port_Client(int port, char * hostname)
+tcp_INET_Client::tcp_INET_Client(int port, char * hostname)
 {
-	cout << "tcp_INET_Port_Client(port, hostname)" << endl;
-	tcp_port_cl_open(port, hostname);
+	cout << "tcp_INET_Client(port, hostname)" << endl;
+	tcp_cl_open(port, hostname);
 }
 
-tcp_INET_Port_Client::tcp_INET_Port_Client(char * service, char * hostname)
+tcp_INET_Client::tcp_INET_Client(char * service, char * hostname)
 {
-	cout << "tcp_INET_Port_Client(service, hostname)" << endl;
-	tcp_port_cl_open(service, hostname);
+	cout << "tcp_INET_Client(service, hostname)" << endl;
+	tcp_cl_open(service, hostname);
 }
 
-tcp_INET_Port_Client::~tcp_INET_Port_Client()
+tcp_INET_Client::~tcp_INET_Client()
 {
-	cout << "tcp_INET_Port_Client Destructor" << endl;
+	cout << "tcp_INET_Client Destructor" << endl;
 }
 
 
-int tcp_INET_Port_Client::tcp_port_cl_open (int port, char * host)
+int tcp_INET_Client::tcp_cl_open (int port, char * host)
 {
 	unsigned long inaddr;
 	struct hostent * hp;
@@ -282,7 +190,7 @@ int tcp_INET_Port_Client::tcp_port_cl_open (int port, char * host)
 }
 
 
-int tcp_INET_Port_Client::tcp_port_cl_open (char * service, char * host)
+int tcp_INET_Client::tcp_cl_open (char * service, char * host)
 {
 	unsigned long inaddr;
 	struct servent * sp;
@@ -358,7 +266,9 @@ int tcp_INET_Port_Client::tcp_port_cl_open (char * service, char * host)
 
 
 
-// tcp_UNIX_Client methods...
+/*
+ * tcp_UNIX_Client methods...
+ */
 
 
 tcp_UNIX_Client::tcp_UNIX_Client(char * pathname)

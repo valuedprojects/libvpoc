@@ -3,13 +3,6 @@
 
 #include <sys/socket.h>		// For sockaddr
 
-/*
-* tcp_PF_INET_cl_open - Used by a client application to setup a connection to a
- * PF_INET server.  The returned file descriptor will be used for to send data
- * between client and server.
- */
-int tcp_PF_INET_cl_open(char * host, char * service, int port);
-
 
 class tcp_Base_Client
 {
@@ -26,17 +19,17 @@ public:
 };
 
 
-class tcp_INET_Port_Client : public tcp_Base_Client
+class tcp_INET_Client : public tcp_Base_Client
 {
 private:
-	int tcp_port_cl_open (int port, char * host);
-	int tcp_port_cl_open (char * service, char * host);
+	int tcp_cl_open (int port, char * host);
+	int tcp_cl_open (char * service, char * host);
 public:
-	tcp_INET_Port_Client(int port);
-	tcp_INET_Port_Client(int port, char * hostname);
-	tcp_INET_Port_Client(char * service);
-	tcp_INET_Port_Client(char * service, char * hostname);
-	virtual ~tcp_INET_Port_Client();
+	tcp_INET_Client(int port);
+	tcp_INET_Client(int port, char * hostname);
+	tcp_INET_Client(char * service);
+	tcp_INET_Client(char * service, char * hostname);
+	virtual ~tcp_INET_Client();
 };
 
 
