@@ -33,7 +33,7 @@ using namespace std;
 
 // tcp_Base_Client methods...
 
-tcp_Base_Client::tcp_Base_Client()
+tcp_Base_Client::tcp_Base_Client() : client_fd(-1)
 {
 	cout << "tcp_Base_Client()" << endl;
 };
@@ -317,6 +317,8 @@ int tcp_UNIX_Client::tcp_PF_UNIX_cl_open (char * pathname)
 		perror(buff);
 		return (-1);
 	}
+
+	return (0);
 }
 
 /*
