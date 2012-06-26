@@ -37,7 +37,7 @@ int StreamOps::sRead (unsigned char * Buffer, unsigned int Length, char * Descri
 	  else if (status == 0)
 		{
 		  // The peer disconnected the connection
-		  printf ("Peer closed connection\n");
+		  printf ("Peer closed connection. %d bytes read,\n", (BytesToGet-BytesStillNeeded));
 		  break;
 		}
 	  else
@@ -65,11 +65,13 @@ int StreamOps::sReadDelimited (unsigned char * Buffer, unsigned int Length, unsi
   if (0 == Length)
 	return status;
   
+  memset(Buffer, 0, Length);
+
   while (position < (Length-1))
 	{
 	  if ( (status = sRead (Buffer+position, 1, Description)) != 1 )
 		{
-		  // This is an annomalous condition, so break the loop and exit the routine.
+		  // This is an anomalous condition, so break the loop and exit the routine.
 		  break;
 		}
 	  if (Delimiter == *(Buffer+position))
