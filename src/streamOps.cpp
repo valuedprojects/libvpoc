@@ -18,7 +18,7 @@ int StreamOps::sRead (unsigned char * Buffer, unsigned int Length, char * Descri
 
   char ErrBuff[128];
   
-  memset(Buffer, Length, 0);
+  memset(Buffer, 0, Length);
 
   while (BytesStillNeeded)
 	{
