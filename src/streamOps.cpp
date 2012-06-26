@@ -18,6 +18,8 @@ int StreamOps::sRead (unsigned char * Buffer, unsigned int Length, char * Descri
 
   char ErrBuff[128];
   
+  memset(Buffer, Length, 0);
+
   while (BytesStillNeeded)
 	{
 	  // Debugging...
@@ -36,7 +38,7 @@ int StreamOps::sRead (unsigned char * Buffer, unsigned int Length, char * Descri
 		{
 		  // The peer disconnected the connection
 		  printf ("Peer closed connection\n");
-		  return 0;
+		  break;
 		}
 	  else
 		{
