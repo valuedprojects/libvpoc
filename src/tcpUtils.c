@@ -1,5 +1,5 @@
 /*
- * tcpUtils.cpp
+ * tcpUtils.c
  * 
  * Experimenting with a C implementation of a TCP socket connection utility.
  * The functions in this code allow establishing a TCP connection with INET
@@ -26,14 +26,14 @@
 
 
 
-static int tcp_bind_setup_fd (int fd, sockaddr * pGenericSocketAddress)
+static int tcp_bind_setup_fd (int fd, const struct sockaddr * pGenericSocketAddress)
 {
 	socklen_t addrlen;
 	// Find size of socket:
 	if (pGenericSocketAddress->sa_family == PF_INET)
-		addrlen = sizeof(sockaddr_in);
+		addrlen = sizeof(struct sockaddr_in);
 	else if (pGenericSocketAddress->sa_family == PF_UNIX)
-		addrlen = sizeof(sockaddr_un);
+		addrlen = sizeof(struct sockaddr_un);
 	else
 	{
 		fprintf(stderr, "%s: Unexpected Protocol Family: %d\n", __FUNCTION__, pGenericSocketAddress->sa_family);
@@ -92,7 +92,7 @@ int tcp_PF_UNIX_srv_open (char * pathName)
 	}
 
 	// Finally return the file descriptor for the socket...
-	return (tcp_bind_setup_fd(fd, (sockaddr*)(&srv_addr)));
+	return (tcp_bind_setup_fd(fd, (struct sockaddr *)(&srv_addr)));
 }
 
 
@@ -153,7 +153,7 @@ int tcp_PF_INET_srv_open (char * service, int port)
 	}
 
 	// Finally return the file descriptor for the socket...
-	return (tcp_bind_setup_fd(fd, (sockaddr*)(&srv_addr)));
+	return (tcp_bind_setup_fd(fd, (struct sockaddr *)(&srv_addr)));
 }
 
 
@@ -412,7 +412,7 @@ int tcp_ServerStartup (int portNum, char * pathName, int (*serverProcessing)(int
 	// Each connection will contain a different client peer.
 	struct sockaddr peerAddr;
 	socklen_t peerAddrLength;
-	peerAddrLength = sizeof(sockaddr_in);
+	peerAddrLength = sizeof(struct sockaddr_in);
 
 	// The main server loop.  Wait for connections dealing with problems in the
 	// accept call along the way...
