@@ -366,7 +366,7 @@ void HandleExitServer (int signum)
 // streaming mechanisms will have a "read" fd, and a "write" fd.
 // The tcp_ServerStartup function will give the same socket fd as both parameters
 // when tcp_ServerStartup calls the serverProcessing function pointer.
-int tcp_ServerStartup (int portNum, char * pathName, int (*serverProcessing)(int read_fd, int write_fd))
+int tcp_ServerStartup (int portNum, char * service, char * pathName, int (*serverProcessing)(int read_fd, int write_fd))
 {
 	// New and old actions for signal handling...
 	struct sigaction new_SIGCHLD_action[1], old_SIGCHLD_action[1];
@@ -392,12 +392,14 @@ int tcp_ServerStartup (int portNum, char * pathName, int (*serverProcessing)(int
 	// Open the tcp server socket...
 	if (pathName)
 		server_fd = tcp_PF_UNIX_srv_open(pathName);
+	else if (service)
+		server_fd = tcp_PF_INET_srv_open(service, 0);
 	else if (portNum)
 		server_fd = tcp_PF_INET_srv_open(0, portNum);
 	else
 	{
 		// Usage problem.  We need either a port of a pathname.
-		fprintf(stderr, "Neither port, nor pathname was provided.\n");
+		fprintf(stderr, "No pathname, service, or portNumber was provided.\n");
 		exit (-1);
 	}
 

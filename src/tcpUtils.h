@@ -41,7 +41,7 @@ int tcp_PF_UNIX_cl_open(char * pathName);
 // streaming mechanisms will have a "read" fd, and a "write" fd.
 // The tcp_ServerStartup function will give the same socket fd as both parameters
 // when tcp_ServerStartup calls the serverProcessing function pointer.
-int tcp_ServerStartup (int portNum, char * pathName, int (*serverProcessing)(int read_fd, int write_fd));
+int tcp_ServerStartup (int portNum, char * service, char * pathName, int (*serverProcessing)(int read_fd, int write_fd));
 
 #ifdef __cplusplus
 }
