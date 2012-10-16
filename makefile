@@ -8,7 +8,7 @@
 ifndef DEV_ROOT
 $(error "The DEV_ROOT variable must be set")
 endif
-# As an example, my DEV_ROOT is $HOME/Experiments/Programming
+# As an example, my DEV_ROOT is $HOME/Experiments
 
 # Basic development directories.  These declarations may have to go in each of my makefiles...
 DEV_INCLUDE_DIR = $(DEV_ROOT)/include
