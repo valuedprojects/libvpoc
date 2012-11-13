@@ -40,6 +40,7 @@ PLATFORM_DIR = $(PROJECT_DIR)/$(PLATFORM)
 # a .o file, add it to a library, then remove the .o file.
 ELEMENTS += streamOps
 ELEMENTS += tcpUtils
+ELEMENTS += randomNumber
 ARMEMBERLIST = ($(addsuffix .o,$(ELEMENTS)))
 ifdef DEBUG
 $(info $(ARMEMBERLIST))
