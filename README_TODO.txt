@@ -1,58 +1,62 @@
-library org.sinkme.misc
+README
+libvpoc++
+Ken Lamarche - April 2014
 
-Version Listing:
-Use "git" to access a desired flavor of this code:
+A "new" approach to my miscellaneous library.
+This will bring me up to about 1990 technology ;-(
 
-v1.x.x
-	Use "git checkout v1.x.x" where 1.x.x is a valid 1. version, and this will give you C code that
-	uses functions for setting up a tcp server or client.
+Here are some of the key points:
 
-v2.x.x
-	Use "git checkout v2.x.x" where 2.x.x is a valid 2. version, and this will give you C++ code that
-	uses classes for setting up a tcp server or client.
+1.
+Having a separate Git branch for the C code and the C++ code was pretty unreasonable.
+In reality, the interfaces to the library are so different between a C implementation
+(which uses functions), and a C++ implementation (which uses classes), these are really
+two different products.
 
+2.
+Each the C and C++ versions of the library should have a name that indicates what they
+are.  The C version should have "c", C++ version "c++"
+
+3.
+Each product will have it's own Git repos, but I was to preserve the changes from the
+work previously done in lib.org.sinkme.misc.
+
+4.
+"lib.org.sinkme.misc" is an outrageous name.  I know I wanted to make a name that would
+never be used by some other entity - and so I keyed off the Domain name as Java tells
+us to do with packages.  But the name needs to be in the vein of normal C/C++ libraries
+that are linked in.
+
+5.
+This README_TODO is for the C++ library.  And it's name is libvpoc++.  The "vpo" is for
+"valuedprojects.org", and will be a common signature on other libraries I build.
+
+6.
+The old lib.org.sinkme.misc code made an archive file (lib.org.sinkme.misc.a).
+I wanted to install this library so that a program using it would not have to include a
+library path.  The using program should be built with a simple "-lvpoc++" argument.
+This is possible if the library is installed in /usr/local/lib.  But this is not 
+possible if the library is an archive.
+For all modern purposes, the library should be a Dynamically Linked Shared Library.
+For Mac, this is a ".dylib" file.  And from the command line, they are created with
+"g++ -shared", not "ar".  This is a significant change from lib.org.sinkme.misc.
+
+
+10 April, 2014
+There is not an OS variable implicit to make.  I found someone's solutions to determining
+the OS on the web.  But it seems a little rough.
+Still, I'm using it until I have time/interest/energy to figure something else out.
 
 TODO
-Incorporate the HexOps module into this library.
 
-30 April, 2012
-Experiments/lib.org.sinkme.misc
-This is a copy of Experiments/src/lib.org.sinkme.misc.  There are 2 development ideas I am experimenting with:
+2.
+Do all this with Xcode.  Control the Xcode project under Git.
 
-1. Instead of using a structure of:
-Experiments
-	src
-		project1
-		project2
-	target
-		t1
-			t1CommonMakery
-			project1
-			project2
-		t2
-			t2CommonMakery
-			project1
-			project2
+3.
+Do I need a different git branch for different architectures?
 
-where Experiments/target/t1/project1/file is a link to Experiments/src/project1/file,
-I will try a structure of:
-Experiments
-	project1
-		src
-		t1
-		t2
-	project2
-		src
-		t1
-		t2
+4.
+What about cross-compiling for small board platforms (Raspberry / BeagleBone)?
 
-where Experiments/project1/t1 contains makery for the t1 platform.  Now, should all t1 platform builds require a common set of make symbols (which is likely), I will need to investigate how those assignments might be factored out of the Experiments/*/t1/makefiles.
-
-2. The second reason to re-org is so that I can try to use "git" for source code control. My idea is that I should be able to maintain a single lib.org.sinkme.misc directory, but git will track a branch for C++ and a separate branch for C.  The experiment will determine how I can retrieve each of these sets for use by a C or C++ user of the code.
-
-Versions and Branches:
-
-I've made a branch called "c++Objects".  I'll be checking in the changes for converting the library to C++ into that branch.  From the docs, it kind of looks like I'm not supposed to keep a branch around.  I'm supposed to do all the work in the branch, then "merge" it back to master, then delete the branch.  However, I'd kind of like to preserve the old C version of the library.
-
-Enter "tags".  It looks like I should use git "tag"s to identify a particular version of a project.  So, I'll use the 1.x.x tags to identify the C version of the org.sinkme.misc library, and used the 2.x.x tags to identify the C++ version of the org.sinkme.misc library.
-
+5.
+Decide on version tagging.

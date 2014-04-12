@@ -1,113 +1,118 @@
 #
-# lib.org.sinkme.misc/makefile.
-# Ken Lamarche - Oct, 2012
+# libvpoc/makefile.
+# Ken Lamarche - April, 2014
 #
-# Universal makefile for my lib.org.sinkme.misc project, built in different Linux style environments.
+# Simple makefile to build a library from command line.
+# Produces:
+# "lib" directory to contain the library file.
+# "include" directory to contain the header files.
+#
+# By default (Mac), the library is a .dylib file.
+# (branches of the repo, or switches on make can create other types of libraries.
+#
+# Getting there.
+# This version will produce files that need to be "Installed".
+# The libvpc++ file should be put in /usr/local/lib
+# The header files should be included in a new directory: /usr/local/include/vcpo
 #
 
-ifndef DEV_ROOT
-$(error "The DEV_ROOT variable must be set")
+# Project Name:
+PROJECT = vpoc
+PROJECTLIB = lib$(PROJECT)
+
+# Determine OS,
+# (not a very complete solution, but OK for now)
+ifeq ($(OS),Windows_NT)
+$(error Not set up for Windows build yet)
+else
+UNAME_S = $(shell uname -s)
+UNAME_P = $(shell uname -p)
+ifeq ($(UNAME_S), Darwin)
+OS := OSX
 endif
-# As an example, my DEV_ROOT is $HOME/Experiments
-
-# Basic development directories.  These declarations may have to go in each of my makefiles...
-DEV_INCLUDE_DIR = $(DEV_ROOT)/include
-DEV_LIB_DIR = $(DEV_ROOT)/lib
-# Lets make sure these DEV_ROOT directories are not files...
-# We have to make "make" tap into the shell to do the file system check.
-# There may be a better way to do this with pure "make".  But once through this code, we know
-# that we have directories to put files into, or we can make the directories.
-ifneq '$(shell if [[ -d $(DEV_LIB_DIR) || ! -e $(DEV_LIB_DIR) ]]; then echo "OK"; fi )' "OK"
-$(error "$$DEV_ROOT/lib is a file rather than a directory. The library cannot be installed in a file.")
+ifeq ($(UNAME_S), Linux)
+OS := Linux
 endif
-ifneq '$(shell if [[ -d $(DEV_INCLUDE_DIR) || ! -e $(DEV_INCLUDE_DIR) ]]; then echo "OK"; fi )' "OK"
-$(error "$$DEV_ROOT/include is a file rather than a directory. The header files cannot be installed in a file.")
 endif
 
-# PROJECT name comes from the directory I'm working in.
-PROJECT = $(notdir $(PWD))
-PROJECT_DIR = $(PWD)
+# Default Install Directories:
+INSTALLHEADER_DIR = /usr/local/include
+INSTALLLIB_DIR = /usr/local/lib
 
-# PLATFORM name comes from version of linux style system I'm running.
-PLATFORM = $(shell uname)
-PLATFORM_DIR = $(PROJECT_DIR)/$(PLATFORM)
+INSTALLPROJECTHEADER_DIR = $(INSTALLHEADER_DIR)/$(PROJECT)
 
-# This project is a library.
+# Set the library name:
+# (not proud of this solution, but it will do for now)
+LIBEXT := $(if $(filter OSX, $(OS)),.dylib, $(if $(filter Linux, $(OS)),.so))
+TARGETLIB = $(join $(PROJECTLIB),$(LIBEXT))
+
+
 # The following are the object elements that are held in the library.
-# Archive elements are identified in make rules as libX.so(e1.o e2.o e3.o).
-# This (e1.o e2.o e3.o) syntax is needed to declare an archives dependence
-# on it's members object code.  A cool implicit rule exists that will make
-# a .o file, add it to a library, then remove the .o file.
-ELEMENTS += streamOps
 ELEMENTS += tcpUtils
+ELEMENTS += hexDump
 ELEMENTS += randomNumber
-ARMEMBERLIST = ($(addsuffix .o,$(ELEMENTS)))
+MEMBERLIST = $(addsuffix .o,$(ELEMENTS))
 ifdef DEBUG
-$(info $(ARMEMBERLIST))
+$(info $(MEMBERLIST))
 endif
-
-# Products are the .a and .so archive libraries.
-# I use the project directory name with "_"s instead of "."s
-# The library products are formed in the project area, and are moved to
-# the DEV_LIB area when compete.
-LIBS += $(subst .,_,$(PROJECT)).so
-LIBS += $(subst .,_,$(PROJECT)).a
-PLATLIBS = $(addprefix $(PLATFORM_DIR)/,$(LIBS))
-DEVLIBS = $(addprefix $(DEV_LIB_DIR)/,$(LIBS))
-LIBSOBJS = $(addsuffix $(ARMEMBERLIST),$(PLATLIBS))
-ifdef DEBUG
-$(info $(LIBSOBJS))
-$(info $(DEVLIBS))
-endif
-
-# Libraries are nothing there are no APIs to access their functions.
-# Here are the header files that other tools would use to access the libraries.
-HEADERS = $(addsuffix .h,$(ELEMENTS))
-DEVHEADERS = $(addprefix $(DEV_INCLUDE_DIR)/,$(HEADERS))
-ifdef DEBUG
-$(info $(DEVHEADERS))
-endif
-
 
 # Where the source code is, and where "make" searches to find the source code.
-SRC_DIR = $(PROJECT_DIR)/src
+SRC_DIR = src
 vpath %.c $(SRC_DIR)
 vpath %.cpp $(SRC_DIR)
 vpath %.h $(SRC_DIR)
 
+LIB_DIR = lib
+INC_DIR = include
+
+TARGETLIBPATH = $(LIB_DIR)/$(TARGETLIB)
+HEADERSLIST = $(addsuffix .h,$(ELEMENTS))
+HEADERSPATHLIST = $(addprefix $(INC_DIR)/,$(HEADERSLIST))
+ifdef DEBUG
+$(info $(HEADERSPATHLIST))
+endif
+
+INSTALLHEADERSPATHLIST = $(addprefix $(INSTALLPROJECTHEADER_DIR)/,$(HEADERSLIST))
+INSTALLLIBPATH = $(INSTALLLIB_DIR)/$(TARGETLIB)
 
 # In general, all compiles would have access to the headers in DEV_ROOT/include
-CPPFLAGS += -I$(DEV_ROOT)/include
+CFLAGS += -fPIC
+CXXFLAGS += -fPIC
 
 
 # Finally, the rules...
 # First, the .PHONYs are run even if there are files existing with these names.
-.PHONY : all clean
+.PHONY : all clean install
 
-# The fundamental make would asure that the libraries and header files of this
-# project are in the DEV_ROOT area, and that they are up to date.
-all: $(DEVLIBS) $(DEVHEADERS)
+all: $(TARGETLIBPATH) $(HEADERSPATHLIST)
 
-# When we clean, we do not remove DEV_ROOT directories, because we don't know
-# what other products have been installed there.
+# Clean by removing the library.
 clean:
-	$(RM) -rf $(PLATFORM_DIR) $(DEVHEADERS) $(DEVLIBS)
+	$(RM) -rf $(LIB_DIR) $(INC_DIR) $(MEMBERLIST)
 
-# Libraries of the platform area are dependent on their member elements, and
-# dependent on the existance of the target platform directory.
-$(PLATLIBS): $(PLATFORM_DIR)
-$(PLATLIBS): $(PLATFORM_DIR)/%: $(PLATFORM_DIR)/%$(ARMEMBERLIST)
+$(TARGETLIBPATH) : $(LIB_DIR) $(TARGETLIB)
+	mv $(TARGETLIB) $(LIB_DIR)/.
 
-# Libraries and headers in the DEV_ROOT area are dependent on the cooresponding
-# files in the platform areas, and dependent on the existence of the DEV_ROOT
-# directories.
-$(DEVLIBS): $(DEV_LIB_DIR)
-$(DEVLIBS): $(DEV_LIB_DIR)/%: $(PLATFORM_DIR)/%
+$(TARGETLIB) : $(MEMBERLIST)
+	$(CXX) -shared -o $@ $^
+	
+$(HEADERSPATHLIST) : $(INC_DIR)
+$(HEADERSPATHLIST) : $(INC_DIR)/% : $(SRC_DIR)/%
 	cp $< $(@D)/.
-$(DEVHEADERS): $(DEV_INCLUDE_DIR)
-$(DEVHEADERS): $(DEV_INCLUDE_DIR)/%: $(SRC_DIR)/%
-	cp $< $(@D)/.
+
 
 # The recipe for non-existent directories is to simply make them.
-$(DEV_LIB_DIR) $(DEV_INCLUDE_DIR) $(PLATFORM_DIR): 
-	mkdir $(@);
+$(LIB_DIR) $(INC_DIR) $(INSTALLPROJECTHEADER_DIR): 
+	mkdir $(@)
+
+install: $(INSTALLHEADERSPATHLIST) $(INSTALLLIBPATH)
+
+$(INSTALLHEADERSPATHLIST) : $(INSTALLPROJECTHEADER_DIR)
+$(INSTALLHEADERSPATHLIST) : $(INSTALLPROJECTHEADER_DIR)/% : $(INC_DIR)/%
+	cp $< $(@D)/.
+
+$(INSTALLLIBPATH) : $(TARGETLIBPATH) $(INSTALLLIB_DIR)
+	cp $(TARGETLIBPATH) $(@D)/.
+
+uninstall:
+	rm -rf $(INSTALLPROJECTHEADER_DIR) $(INSTALLLIBPATH)
