@@ -47,6 +47,23 @@ There is not an OS variable implicit to make.  I found someone's solutions to de
 the OS on the web.  But it seems a little rough.
 Still, I'm using it until I have time/interest/energy to figure something else out.
 
+09 August, 2014
+Every few months, I have to re-learn everything computing.  I start by looking
+at the work I did on libvpoc and libvpoc++.
+
+One note to make this time around:
+
+% sudo make install
+and
+% sudo make uninstall
+
+This is how I can install and uninstall this library so that other tools can use it.
+And this method works for Mac and for Linux.
+If I:
+% sudo make uninstall
+then attempt to run, say Experiments/TestTcpUtilsC/testTcpUtilsClientC, the program
+will not run because it cannot find the libvpoc library.
+
 TODO
 
 2.
